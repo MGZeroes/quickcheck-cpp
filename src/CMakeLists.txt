@@ -1,0 +1,9 @@
+set(BINARY ${CMAKE_PROJECT_NAME})
+
+file(GLOB_RECURSE SOURCES LIST_DIRECTORIES true *.h *.cpp)
+
+set(SOURCES ${SOURCES})
+
+set(CMAKE_BUILD_TYPE Debug)
+
+add_library(${BINARY}_lib STATIC ${SOURCES})

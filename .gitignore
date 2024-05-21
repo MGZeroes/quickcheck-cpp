@@ -1,0 +1,7 @@
+### Jetbrains
+# User-specific stuff
+.idea
+.idea_modules/
+
+# CMake
+cmake-build-*/
