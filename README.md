@@ -1,8 +1,5 @@
 # QuickCheck in C++
 
-[![en](https://img.shields.io/badge/lang-en-green.svg)](./README.md)
-[![de](https://img.shields.io/badge/lang-de-red.svg)](./README.de.md)
-
 ## What is QuickCheck?
 
 [GitHub Repository](https://github.com/emil-e/rapidcheck)<br>
@@ -59,6 +56,9 @@ void quickCheckOO(GenOO<T>* g, bool p(T)) {
 
 ## Functional Programming (FP)
 
+The provided code demonstrates a functional programming approach in C++ 
+using template-based generators to create random values of various types.
+
 ```c++ 
 template<typename T>
 class Gen {
@@ -85,6 +85,100 @@ void quickCheck(bool p(T)) {
             cout << "\n *** Failed";
         }
     }
+}
+```
+
+### Bool Generator
+
+It uses std::random_device and std::mt19937 for random number generation.
+
+It creates a uniform distribution over integers 0 and 1, 
+casting the result to bool to return either true or false.
+
+```c++ 
+template<>
+Gen<bool> arbitrary<bool>() {
+    return {[]() {
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        static std::uniform_int_distribution<int> dis(0, 1);
+        return static_cast<bool>(dis(gen));
+    }};
+}
+```
+
+### String Generator
+
+- The generated string has a length between 1 and 40 lowercase characters.
+- It uses std::uniform_int_distribution to randomly decide the string length and whether to insert a space or a character.
+- The total number of spaces is limited to 10, and no more than 5 spaces can appear consecutively.
+- If a string contains more than 5 consecutive spaces, they are replaced by exactly 5 spaces.
+
+```c++ 
+template<>
+Gen<std::string> arbitrary<std::string>() {
+return {[]() {
+static std::random_device rd;
+static std::mt19937 gen(rd());
+static std::uniform_int_distribution<size_t> len_dis(1, 40); // length
+static std::uniform_int_distribution<int> space_dis(0, 1); // space
+
+        size_t len = len_dis(gen);
+        std::string str;
+        str.reserve(len);
+
+        int space_count = 0;
+        int consecutive_spaces = 0;
+
+        for (size_t i = 0; i < len; ++i) {
+            if (space_count < 10 && space_dis(gen) == 1 && consecutive_spaces < 5) {
+                str += ' ';
+                ++space_count;
+                ++consecutive_spaces;
+            } else {
+                str += arbitrary<char>().generate();
+                consecutive_spaces = 0;
+            }
+        }
+
+        // replace spaces > 5
+        size_t pos = 0;
+        while ((pos = str.find("      ", pos)) != std::string::npos) {
+            str.replace(pos, 6, "     "); // replace
+            pos += 5;
+        }
+
+        return str;
+    }};
+}
+```
+
+### String List Generator
+
+generates a vector of strings, where the number of strings is between 0 and 10.
+
+Each string in the vector is generated using the arbitrary<std::string> generator, 
+ensuring they meet the previously defined constraints.
+The vector's length is determined using std::uniform_int_distribution.
+
+```c++
+template<>
+Gen<std::vector<std::string>> arbitrary<std::vector<std::string>>() {
+    return {[]() {
+        std::vector<std::string> result;
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<int> lenDist(0, 10); // length
+
+        int length = lenDist(gen);
+        result.reserve(length); // reserve
+
+        for (int i = 0; i < length; ++i) {
+            result.push_back(arbitrary<std::string>().generate());
+        }
+
+        return result;
+    }};
 }
 ```
 

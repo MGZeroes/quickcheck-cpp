@@ -23,16 +23,33 @@ template<typename T>
 Gen<T> arbitrary();
 
 
-// Arbitrary generators for common types
-
-
 // Integer generator
 template<>
 Gen<int> arbitrary<int>() {
     return {[]() {
         static std::random_device rd;
         static std::mt19937 gen(rd());
-        static std::uniform_int_distribution<int> dis(0, 100);
+        static std::uniform_int_distribution<int> dis(-100, 100);
+        return dis(gen);
+    }};
+}
+
+template<>
+Gen<unsigned int> arbitrary<unsigned int>() {
+    return {[]() {
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        static std::uniform_int_distribution<unsigned int> dis(0, 100);
+        return dis(gen);
+    }};
+}
+
+template<>
+Gen<char> arbitrary<char>() {
+    return {[]() {
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        static std::uniform_int_distribution<char> dis('a', 'z');
         return dis(gen);
     }};
 }
@@ -43,14 +60,34 @@ Gen<std::string> arbitrary<std::string>() {
     return {[]() {
         static std::random_device rd;
         static std::mt19937 gen(rd());
-        static std::uniform_int_distribution<size_t> len_dis(5, 15);
-        static std::uniform_int_distribution<char> char_dis('a', 'z');
+        static std::uniform_int_distribution<size_t> len_dis(1, 40); // length
+        static std::uniform_int_distribution<int> space_dis(0, 1); // space
 
         size_t len = len_dis(gen);
-        std::string str(len, '\0');
+        std::string str;
+        str.reserve(len);
+
+        int space_count = 0;
+        int consecutive_spaces = 0;
+
         for (size_t i = 0; i < len; ++i) {
-            str[i] = char_dis(gen);
+            if (space_count < 10 && space_dis(gen) == 1 && consecutive_spaces < 5) {
+                str += ' ';
+                ++space_count;
+                ++consecutive_spaces;
+            } else {
+                str += arbitrary<char>().generate();
+                consecutive_spaces = 0;
+            }
         }
+
+        // replace spaces > 5
+        size_t pos = 0;
+        while ((pos = str.find("      ", pos)) != std::string::npos) {
+            str.replace(pos, 6, "     "); // replace
+            pos += 5;
+        }
+
         return str;
     }};
 }
@@ -66,15 +103,68 @@ Gen<bool> arbitrary<bool>() {
     }};
 }
 
+// int list generator
+template<>
+Gen<std::vector<int>> arbitrary<std::vector<int>>() {
+    return {[]() {
+        std::vector<int> result;
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<int> lenDist(0, 10); // length
+
+        int length = lenDist(gen);
+        result.reserve(length); // reserve
+
+        for (int i = 0; i < length; ++i) {
+            result.push_back(arbitrary<int>().generate());
+        }
+
+        return result;
+    }};
+}
+
+// string list generator
+template<>
+Gen<std::vector<std::string>> arbitrary<std::vector<std::string>>() {
+    return {[]() {
+        std::vector<std::string> result;
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_int_distribution<int> lenDist(0, 10); // length
+
+        int length = lenDist(gen);
+        result.reserve(length); // reserve
+
+        for (int i = 0; i < length; ++i) {
+            result.push_back(arbitrary<std::string>().generate());
+        }
+
+        return result;
+    }};
+}
+
 
 // Person generator
+template<>
+Gen<Role> arbitrary<Role>() {
+    return {[]() {
+        Role role;
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        static std::uniform_int_distribution<int> dis(0, 1);
+        role = static_cast<Role>(dis(gen));
+        return role;
+    }};
+}
+
 template<>
 Gen<Person> arbitrary<Person>() {
     return {[]() {
         Person person;
         person.firstName = arbitrary<std::string>().generate();
         person.lastName = arbitrary<std::string>().generate();
-        person.age = arbitrary<int>().generate();
+        person.age = arbitrary<unsigned int>().generate();
+        person.role = arbitrary<Role>().generate();
         return person;
     }};
 }

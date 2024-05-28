@@ -6,59 +6,58 @@
 
 #include <vector>
 
+//// first examples
 
-// Overview
-RC_GTEST_PROP(RapidCheckTest, WithFunction, ()) {
-    const auto range = *rc::gen::arbitrary<std::pair<int, int>>();
-    const auto x = *rc::gen::inRange(range.first, range.second);
-    std::cout << range.first << " and " << range.second << std::endl;
-    RC_ASSERT(x >= range.first);
-    RC_ASSERT(x < range.second);
+// Generates a random integer
+// asserts that doubling it equals multiplying by 2
+RC_GTEST_PROP(RapidCheckFirstTests, IntTest, ()) {
+    const auto num = *rc::gen::inRange(0, 1000);
+    std::cout << num << std::endl;
+    RC_ASSERT((num + num) == (num * 2));
 }
 
-RC_GTEST_PROP(RapidCheckTest, WithParameter, (int a, int b)) {
-    std::cout << a << " and " << b << std::endl;
+// Generates a random character between 'A' and 'Z'
+// asserts that it is an alphabetic character
+RC_GTEST_PROP(RapidCheckFirstTests, CharTest, ()) {
+    const auto chr = *rc::gen::inRange('A', 'Z');
+    std::cout << chr << std::endl;
+    RC_ASSERT(std::isalpha(chr));
 }
 
-RC_GTEST_PROP(RapidCheckTest, WithParameterAndPrecondition, (int a, int b)) {
-    RC_PRE(a >= 0 && b >= 0);
-    std::cout << a << " and " << b << std::endl;
+// Generates two random integers, one positive and one negative
+// asserts that their sum is commutative
+RC_GTEST_PROP(RapidCheckFirstTests, TwoIntsTest, ()) {
+    const auto num1 = *rc::gen::inRange(0, 1000);
+    const auto num2 = *rc::gen::inRange(-1000, 0);
+    std::cout << num1 << ", " << num2 << std::endl;
+    RC_ASSERT((num1 + num2) == (num2 + num1));
 }
 
-
-
-
-
-
-// Test case for integer
-// RapidCheck generates random values for the parameters a and b.
-// If the assertion holds for all generated pairs, the test passes.
-RC_GTEST_PROP(RapidCheckTest, CheckMultiplicationPositiveVal, (int32_t a, int32_t b)) {
-        RC_PRE(a >= 0 && b >= 0); // If the precondition does not hold, the test case will be discarded
-        std::cout << a << " * " << b << std::endl;
-        auto res1 = multiplyWithOperator(a, b);
-        auto res2 = multiplyWithLoop(a, b);
-        RC_ASSERT(res1 == res2);
+// Generates a random string
+// asserts that it is empty if its size is 0
+RC_GTEST_PROP(RapidCheckFirstTests, StringTest, ()) {
+    const auto str = *rc::gen::arbitrary<std::string>();
+    std::cout << str << std::endl;
+    RC_ASSERT(str.empty() == (str.size() == 0));
 }
 
-// If the assertion fails for any pair, RapidCheck reports the failure, including the specific values of a and b that caused the failure.
-RC_GTEST_PROP(RapidCheckTest, CheckMultiplicationUnsigned, (int32_t a, int32_t b)) {
-    std::cout << a << " * " << b << std::endl;
-    auto res1 = multiplyWithOperator(a, b);
-    auto res2 = multiplyWithLoop(a, b);
+// Generates a vector of integers with a maximum size of 10
+RC_GTEST_PROP(RapidCheckTests, VectorTest, ()) {
+    const auto listGen = *rc::gen::container<std::vector<int>>(rc::gen::inRange(0, 100));
+    RC_PRE(listGen.size() <= 10);
 
-    // If a failure occurs, RapidCheck attempts to "shrink" the input values to find the smallest values that still cause the failure.
-    // Shrinking helps to identify the simplest case that causes the problem, making it easier to debug.
-    RC_ASSERT(res1 == res2);
+    for (auto v : listGen)
+        std::cout << v << ", ";
+    std::cout << std::endl;
 }
 
+// Generates a string from a predefined set and asserts that reversing it using two methods yields the same result.
+RC_GTEST_PROP(RapidCheckTest, CompareReverseMethods, ()) {
+    const auto a = *rc::gen::sizedElement(
+            std::string("one"),
+            std::string("two"),
+            std::string("three"));
 
-
-
-
-
-// Test case for strings
-RC_GTEST_PROP(RapidCheckTest, CompareReverseMethods, (const std::string& a)) {
     std::cout << a << std::endl;
     auto res1 = reverseWithStdReverse(a);
     auto res2 = reverseWithSwap(a);
@@ -66,49 +65,111 @@ RC_GTEST_PROP(RapidCheckTest, CompareReverseMethods, (const std::string& a)) {
 }
 
 
+//// property-based checks
+
+// Generates a random integer
+// asserts that doubling it equals multiplying by 2
+TEST(RapidCheckPropertiesTests, IntTest) {
+    rc::check([](const int &num) {
+        std::cout << num << std::endl;
+        RC_ASSERT((num + num) == (num * 2));
+    });
+}
+
+// Generates a random string
+// asserts that it is empty if its size is 0
+TEST(RapidCheckPropertiesTests, StringTest) {
+    rc::check([](const std::string &str) {
+        std::cout << str << std::endl;
+        RC_ASSERT(str.empty() == (str.size() == 0));
+    });
+}
 
 
+//// Gtest integration
 
+// Generates a random integer
+// asserts that doubling it equals multiplying by 2
+RC_GTEST_PROP(RapidCheckGTests, IntTest, (const int &num)) {
+    std::cout << num << std::endl;
+    RC_ASSERT((num + num) == (num * 2));
+}
 
+// Generates a random string
+// asserts that it is empty if its size is 0
+RC_GTEST_PROP(RapidCheckGTests, StringTest, (const std::string &str)) {
+    std::cout << str << std::endl;
+    RC_ASSERT(str.empty() == (str.size() == 0));
+}
 
-// Test case for booleans
-RC_GTEST_PROP(RapidCheckTest, BooleanTest, (bool val1, bool val2, bool val3, bool val4)) {
+//// failure handling
+
+// Generates four boolean values
+// asserts that a specific combination does not occur (1001)
+RC_GTEST_PROP(RapidCheckTests, BooleanTest, (bool val1, bool val2, bool val3, bool val4)) {
     std::cout << val1 << " " << val2 << " " << val3 << " " << val4 << std::endl;
     RC_ASSERT(!(val1 == true && val2 == false && val3 == false && val4 == true));
 }
 
 
+// Tests that multiplication of two integers yields the same result when using two different multiplication methods.
+RC_GTEST_PROP(RapidCheckTest, CheckMultiplicationPositiveVal, (int32_t a, int32_t b)) {
+        std::cout << a << " * " << b << std::endl;
+        auto res1 = multiplyWithOperator(a, b);
+        auto res2 = multiplyWithLoop(a, b);
+        RC_ASSERT(res1 == res2);
+}
 
+// Similar to the previous test, this one verifies multiplication results for any pair of integers.
+RC_GTEST_PROP(RapidCheckTest, CheckMultiplicationUnsigned, (uint32_t a, uint32_t b)) {
+    std::cout << a << " * " << b << std::endl;
+    auto res1 = multiplyWithOperator(a, b);
+    auto res2 = multiplyWithLoop(a, b);
+    RC_ASSERT(res1 == res2);
+}
 
+//// arbitrary support for custom type
 
-
-
-// arbitrary support for custom type
 // NOTE: Must be in rc namespace!
 namespace rc {
 
+    // Custom generator for Role enum
+    template<>
+    struct Arbitrary<Role> {
+        static Gen<Role> arbitrary() {
+            return gen::element(STUDENT, TEACHER);
+        }
+    };
+
+    // Custom generator for Person class
     template<>
     struct Arbitrary<Person> {
         static Gen<Person> arbitrary() {
+            std::vector<std::string> firstNames{"John", "Jane", "Daniel", "Marvin"};
+            std::vector<std::string> lastNames{"Cindric", "Müller", "Doe"};
             return gen::build<Person>(
-                    gen::set(&Person::firstName),
-                    gen::set(&Person::lastName),
-                    gen::set(&Person::age, gen::inRange(0, 100)));
+                    gen::set(&Person::firstName, gen::elementOf(firstNames)),
+                    gen::set(&Person::lastName, gen::elementOf(lastNames)),
+                    gen::set(&Person::age, gen::inRange(0, 150)),
+                    gen::set(&Person::role));
         }
     };
 
 } // namespace rc
 
-RC_GTEST_PROP(RapidCheckTest, PersonTestParameter, (Person p)) {
-    std::cout << "First name: " << p.firstName << std::endl;
-    std::cout << "Last name: " << p.lastName << std::endl;
-    std::cout << "Age: " << p.age << std::endl;
+// Generates a random Role and tags them
+RC_GTEST_PROP(RapidCheckTests, RoleTest, (Role r)) {
+    //const auto r = *rc::gen::arbitrary<Role>();
+    const auto rStr = r == STUDENT ? "Student" : "Lehrer";
+    RC_TAG(rStr);
+    std::cout << rStr << std::endl;
 }
 
-
-RC_GTEST_PROP(RapidCheckTest, PersonTestFunction, ()) {
-    const auto p = *rc::gen::arbitrary<Person>();
-    std::cout << "First name: " << p.firstName << std::endl;
-    std::cout << "Last name: " << p.lastName << std::endl;
-    std::cout << "Age: " << p.age << std::endl;
+// Generates a random Person and tags their properties
+RC_GTEST_PROP(RapidCheckTests, PersonTest, (Person p)) {
+    //const auto p = *rc::gen::arbitrary<Person>();
+    RC_TAG(p.firstName);
+    RC_TAG(p.lastName);
+    RC_TAG(p.role == STUDENT ? "Student" : "Lehrer");
+    std::cout << p << std::endl;
 }
