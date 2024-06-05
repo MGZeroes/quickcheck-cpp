@@ -188,6 +188,14 @@ Gen<std::vector<std::string>> arbitrary<std::vector<std::string>>() {
 
 `target_link_libraries(${BINARY} PUBLIC ${CMAKE_PROJECT_NAME}_lib gtest rapidcheck)`
 
+`RC_PARAMS` environment variable. The configuration string has the format `<key1>=<value1> <key2>=<value2> ...`.
+The following settings are provided:
+- `seed` - The global random seed used
+- `max_success` - The maximum number of successful test cases to run before deciding that a property holds. Defaults to `100`.
+- `max_discard_ratio` - The maximum number of discarded test cases per successful test case. If exceeded, RapidCheck gives up on the property. Defaults to `10`.
+- `noshrink` - If set to `1`, disables test case shrinking. Defaults to `0`.
+- `reproduce` - String that encodes the information necessary to reproduce minimal failures for properties.
+
 ```c++ 
 #include "rapidcheck.h"
 
@@ -205,6 +213,8 @@ int main() {
     return 0;
 }
 ```
+`RC_ASSERT` is used to validate properties. 
+If the assertion fails, RapidCheck will print the failing case and attempt to simplify it to find the smallest failing input.
 
 ### RC with Google Tests
 
@@ -219,4 +229,4 @@ RC_GTEST_PROP(MyTestCase, copyOfStringIsIdenticalToOriginal, (const std::string 
     RC_ASSERT(strCopy == str);
 }
 ```
-
+`RC_GTEST_PROP`: These are RapidCheck tests integrated with Google Test.
