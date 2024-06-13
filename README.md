@@ -31,7 +31,6 @@ that a program should always satisfy.
 This code snippet is a simple framework for implementing generic object generators. 
 
 It's a basic form of what might be used in automated testing frameworks 
-where various types of objects need to be automatically generated and validated against expected conditions.
 
 ```c++ 
 template<typename T>
