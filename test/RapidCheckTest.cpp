@@ -113,7 +113,7 @@ RC_GTEST_PROP(RapidCheckTests, BooleanTest, (bool val1, bool val2, bool val3, bo
 
 
 // Tests that multiplication of two integers yields the same result when using two different multiplication methods.
-RC_GTEST_PROP(RapidCheckTest, CheckMultiplicationPositiveVal, (int32_t a, int32_t b)) {
+RC_GTEST_PROP(RapidCheckTest, CheckMultiplicationSigned, (int32_t a, int32_t b)) {
         std::cout << a << " * " << b << std::endl;
         auto res1 = multiplyWithOperator(a, b);
         auto res2 = multiplyWithLoop(a, b);
