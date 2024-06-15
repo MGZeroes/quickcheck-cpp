@@ -28,11 +28,9 @@ that a program should always satisfy.
 
 ## Object Oriented (OO) Approach
 
-This code snippet is a simple framework for implementing generic object generators 
-and testing them against specified conditions or predicates. 
+This code snippet is a simple framework for implementing generic object generators. 
 
 It's a basic form of what might be used in automated testing frameworks 
-where various types of objects need to be automatically generated and validated against expected conditions.
 
 ```c++ 
 template<typename T>
@@ -56,7 +54,7 @@ void quickCheckOO(GenOO<T>* g, bool p(T)) {
 
 ## Functional Programming (FP) Approach
 
-The provided code demonstrates a functional programming approach in C++ 
+This is a functional programming approach in C++ 
 using template-based generators to create random values of various types.
 
 ```c++ 

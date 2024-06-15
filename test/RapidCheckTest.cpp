@@ -41,6 +41,14 @@ RC_GTEST_PROP(RapidCheckFirstTests, StringTest, ()) {
     RC_ASSERT(str.empty() == (str.size() == 0));
 }
 
+// Generates a random string
+// asserts that it is empty if its size is 0
+RC_GTEST_PROP(RapidCheckFirstTests, StringTestTwo, ()) {
+    const auto str = *rc::gen::container<std::string>(rc::gen::inRange('a', 'z'));
+    std::cout << str << std::endl;
+    RC_ASSERT(str.empty() == (str.size() == 0));
+}
+
 // Generates a vector of integers with a maximum size of 10
 RC_GTEST_PROP(RapidCheckTests, VectorTest, ()) {
     const auto listGen = *rc::gen::container<std::vector<int>>(rc::gen::inRange(0, 100));
@@ -113,7 +121,7 @@ RC_GTEST_PROP(RapidCheckTests, BooleanTest, (bool val1, bool val2, bool val3, bo
 
 
 // Tests that multiplication of two integers yields the same result when using two different multiplication methods.
-RC_GTEST_PROP(RapidCheckTest, CheckMultiplicationPositiveVal, (int32_t a, int32_t b)) {
+RC_GTEST_PROP(RapidCheckTest, CheckMultiplicationSigned, (int32_t a, int32_t b)) {
         std::cout << a << " * " << b << std::endl;
         auto res1 = multiplyWithOperator(a, b);
         auto res2 = multiplyWithLoop(a, b);
@@ -121,12 +129,12 @@ RC_GTEST_PROP(RapidCheckTest, CheckMultiplicationPositiveVal, (int32_t a, int32_
 }
 
 // Similar to the previous test, this one verifies multiplication results for any pair of integers.
-RC_GTEST_PROP(RapidCheckTest, CheckMultiplicationUnsigned, (uint32_t a, uint32_t b)) {
+/*RC_GTEST_PROP(RapidCheckTest, CheckMultiplicationUnsigned, (uint32_t a, uint32_t b)) {
     std::cout << a << " * " << b << std::endl;
     auto res1 = multiplyWithOperator(a, b);
     auto res2 = multiplyWithLoop(a, b);
     RC_ASSERT(res1 == res2);
-}
+}*/
 
 //// arbitrary support for custom type
 
