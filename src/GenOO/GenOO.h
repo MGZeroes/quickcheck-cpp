@@ -3,9 +3,10 @@
 
 #include "Person.h"
 
-#include <iostream>
 #include <random>
 #include <string>
+#include <algorithm>
+#include <iostream>
 #include <utility>
 
 // Base generator class
@@ -43,6 +44,7 @@ private:
     size_t maxLen = 40;
     char minChar = 'a';
     char maxChar = 'z';
+    size_t minSpaces = 0;
     size_t maxSpaces = 10;
 
 public:
@@ -55,27 +57,33 @@ public:
         static std::mt19937 gen(rd());
         static std::uniform_int_distribution<size_t> len_dis(minLen, maxLen);
         static std::uniform_int_distribution<char> char_dis(minChar, maxChar);
-        static std::uniform_int_distribution<int> space_dis(0, 1);
+        static std::uniform_int_distribution<size_t> space_dis(minSpaces, maxSpaces);
 
-        size_t len = len_dis(gen);
-        std::string str;
-        str.reserve(len);
+        size_t length = len_dis(gen);
+        size_t numSpaces = 0;
+        size_t numChars = 0;
 
-        int space_count = 0;
-        int consecutive_spaces = 0;
-
-        for (size_t i = 0; i < len; ++i) {
-            if (space_count < maxSpaces && space_dis(gen) == 1 && consecutive_spaces < 5) {
-                str += ' ';
-                ++space_count;
-                ++consecutive_spaces;
-            } else {
-                str += char_dis(gen);
-                consecutive_spaces = 0;
-            }
+        if(length > 0) {
+            numSpaces = space_dis(gen);
+            numSpaces = numSpaces >= length ? length - 1: numSpaces;
+            numChars = length - numSpaces;
         }
 
-        // replace spaces > 6
+        std::string str;
+        str.reserve(length);
+
+        // generate chars and append them
+        for (size_t i = 0; i < numChars; ++i) {
+            str.append(1, char_dis(gen));
+        }
+
+        // append spaces
+        str.append(numSpaces, ' ');
+
+        // shuffle the string to distribute spaces and characters more randomly
+        std::shuffle(str.begin(), str.end(), gen);
+
+        // replace spaces > 5
         size_t pos = 0;
         while ((pos = str.find("      ", pos)) != std::string::npos) {
             str.replace(pos, 6, "     "); // replace

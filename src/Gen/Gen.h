@@ -60,26 +60,32 @@ Gen<std::string> arbitrary<std::string>() {
     return {[]() {
         static std::random_device rd;
         static std::mt19937 gen(rd());
-        static std::uniform_int_distribution<size_t> len_dis(1, 40); // length
-        static std::uniform_int_distribution<int> space_dis(0, 1); // space
+        static std::uniform_int_distribution<size_t> len_dis(1, 40);
+        static std::uniform_int_distribution<size_t> space_dis(0, 10);
 
-        size_t len = len_dis(gen);
-        std::string str;
-        str.reserve(len);
+        size_t length = len_dis(gen);
+        size_t numSpaces = 0;
+        size_t numChars = 0;
 
-        int space_count = 0;
-        int consecutive_spaces = 0;
-
-        for (size_t i = 0; i < len; ++i) {
-            if (space_count < 10 && space_dis(gen) == 1 && consecutive_spaces < 5) {
-                str += ' ';
-                ++space_count;
-                ++consecutive_spaces;
-            } else {
-                str += arbitrary<char>().generate();
-                consecutive_spaces = 0;
-            }
+        if(length > 0) {
+            numSpaces = space_dis(gen);
+            numSpaces = numSpaces >= length ? length - 1: numSpaces;
+            numChars = length - numSpaces;
         }
+
+        std::string str;
+        str.reserve(length);
+
+        // generate chars and append them
+        for (size_t i = 0; i < numChars; ++i) {
+            str.append(1, arbitrary<char>().generate());
+        }
+
+        // append spaces
+        str.append(numSpaces, ' ');
+
+        // shuffle the string to distribute spaces and characters more randomly
+        std::shuffle(str.begin(), str.end(), gen);
 
         // replace spaces > 5
         size_t pos = 0;
