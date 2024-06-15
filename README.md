@@ -243,6 +243,14 @@ The class-based approach involves more complex setup and management of virtual m
    - **Inlined Code:**
      - If possible, the compiler inlines the lambda function calls, resulting in efficient, direct function calls without additional overhead.
 
+
+3. **More Info**
+   - [Virtual Tables in C++](https://pabloariasal.github.io/2017/06/10/understanding-virtual-tables/)
+   - [Lambda Expressions in c++](https://www.geeksforgeeks.org/lambda-expression-in-c/)
+   - [When to use Lambda expressions in c++](https://www.geeksforgeeks.org/when-to-use-lambda-expressions-instead-of-functions-in-cpp/)
+   - [Inline Functions](https://www.geeksforgeeks.org/inline-functions-cpp/)
+
+
 ## Rapid RapidCheck (RC)
 RapidCheck offers a higher-level abstraction focused on testing properties.
 
@@ -434,3 +442,4 @@ OK, passed 100 tests
 
 Process finished with exit code 0
 ```
+
